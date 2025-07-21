@@ -12,13 +12,9 @@ class User extends Authenticatable implements CanResetPassword
     use Notifiable, CanResetPasswordTrait;
 
     protected $table = 'usuarios';
-
     protected $primaryKey = 'IdUsuario';
 
-    // Solo usa 'FechaCreacion' como timestamp de creación
     const CREATED_AT = 'FechaCreacion';
-
-    // Desactiva el timestamp de actualización para evitar errores
     const UPDATED_AT = null;
 
     public $timestamps = true;
@@ -51,6 +47,11 @@ class User extends Authenticatable implements CanResetPassword
     public function getAuthIdentifierName()
     {
         return 'Correo';
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->getAttribute($this->getAuthIdentifierName());
     }
 
     public function rol()

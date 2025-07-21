@@ -42,14 +42,19 @@
 
     <div style="margin-bottom: 1.5rem;">
         <label for="Subsector" style="font-weight: 700; color: #374151;">Subsector</label>
-        <input
-            type="text"
+        <select
             name="Subsector"
             id="Subsector"
-            value="{{ old('Subsector') }}"
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px;"
         >
+            <option value="" disabled {{ old('Subsector') ? '' : 'selected' }}>Seleccione un subsector</option>
+            @foreach($subsectores as $subsector)
+                <option value="{{ $subsector }}" {{ old('Subsector') == $subsector ? 'selected' : '' }}>
+                    {{ $subsector }}
+                </option>
+            @endforeach
+        </select>
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -60,7 +65,7 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px;"
         >
-            <option value="" disabled selected>Seleccione un nivel</option>
+            <option value="" disabled {{ old('NivelGobierno') ? '' : 'selected' }}>Seleccione un nivel</option>
             <option value="Nacional" {{ old('NivelGobierno') == 'Nacional' ? 'selected' : '' }}>Nacional</option>
             <option value="Provincial" {{ old('NivelGobierno') == 'Provincial' ? 'selected' : '' }}>Provincial</option>
             <option value="Cantonal" {{ old('NivelGobierno') == 'Cantonal' ? 'selected' : '' }}>Cantonal</option>
@@ -75,9 +80,9 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px;"
         >
-            <option value="" disabled selected>Seleccione un estado</option>
-            <option value="Activo" {{ old('Estado') == 'Activo' ? 'selected' : '' }}>Activo</option>
-            <option value="Inactivo" {{ old('Estado') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+            <option value="" disabled {{ old('Estado') !== '0' && !old('Estado') ? 'selected' : '' }}>Seleccione un estado</option>
+            <option value="1" {{ old('Estado') === '1' ? 'selected' : '' }}>Activo</option>
+            <option value="0" {{ old('Estado') === '0' ? 'selected' : '' }}>Inactivo</option>
         </select>
     </div>
 

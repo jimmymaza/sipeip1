@@ -6,41 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Meta extends Model
 {
-    protected $table = 'meta';
-    protected $primaryKey = 'IdMeta';
-    public $timestamps = false;
+    protected $table = 'metas';
 
     protected $fillable = [
-        'Descripcion',
-        'FechaInicio',
-        'FechaFin',
-        'IdObjetivoInstitucional', // FK para objetivo institucional
-        'IdObjetivoPND',           // FK para objetivo PND
-        'IdObjetivoODS',           // FK para objetivo ODS
-        'IdProyecto',
+        'codigo',
+        'nombre',
+        'descripcion',
+        'estado',
+        'objetivo_id',
+        'plan_id',
+        'fecha_inicio',
+        'fecha_fin',
     ];
 
     // Relación con Objetivo Institucional
-    public function objetivoInstitucional()
+    public function objetivo()
     {
-        return $this->belongsTo(ObjetivoInstitucional::class, 'IdObjetivoInstitucional', 'IdObjetivo');
+        return $this->belongsTo(ObjetivoInstitucional::class, 'objetivo_id');
     }
 
-    // Relación con Objetivo PND
-    public function objetivoPND()
+    // Relación con Plan
+    public function plan()
     {
-        return $this->belongsTo(ObjetivoPND::class, 'IdObjetivoPND', 'IdObjetivo');
-    }
-
-    // Relación con Objetivo ODS
-    public function objetivoODS()
-    {
-        return $this->belongsTo(ObjetivoODS::class, 'IdObjetivoODS', 'IdObjetivo');
-    }
-
-    // Relación con Proyecto
-    public function proyecto()
-    {
-        return $this->belongsTo(Proyecto::class, 'IdProyecto', 'IdProyecto');
+        return $this->belongsTo(Plan::class, 'plan_id');
     }
 }

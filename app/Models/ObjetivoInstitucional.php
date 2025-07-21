@@ -9,32 +9,64 @@ class ObjetivoInstitucional extends Model
     protected $table = 'objetivos_institucionales';
 
     protected $fillable = [
+        'codigo',
+        'nombre',
         'descripcion',
-        'fecha_registro',
         'estado',
+        'fecha_registro',
+        'tipo', // puede ser: institucional, pnd, ods
     ];
 
-    protected $dates = ['fecha_registro'];
+    // Relación uno a muchos con metas
+    public function metas()
+    {
+        return $this->hasMany(Meta::class, 'objetivo_id');
+    }
 
-    // Relación muchos a muchos con ObjetivoPND
-    public function pnds()
+    // Relación muchos a muchos con planes
+    public function planes()
     {
         return $this->belongsToMany(
-            ObjetivoPND::class,
-            'alineacion_objetivos',
-            'objetivo_institucional_id',
-            'objetivo_pnd_id'
+            Plan::class,
+            'objetivo_plan',
+            'objetivo_id',
+            'plan_id'
         );
     }
 
-    // Relación muchos a muchos con ObjetivoODS
-    public function ods()
+    /**
+     * Scope local para filtrar objetivos por tipo
+     * Uso: ObjetivoInstitucional::tipo('ods')->get();
+     */
+    public function scopeTipo($query, $tipo)
+    {
+        return $query->where('tipo', $tipo);
+    }
+
+    /**
+     * Objetivos alineados (hijos)
+     * Podrías filtrar por tipo_alineacion si lo necesitas
+     */
+    public function alineados()
     {
         return $this->belongsToMany(
-            ObjetivoODS::class,
+            ObjetivoInstitucional::class,
             'alineacion_objetivos',
-            'objetivo_institucional_id',
-            'objetivo_ods_id'
+            'objetivo_id',
+            'objetivo_alineado_id'
+        );
+    }
+
+    /**
+     * Objetivos que alinean a este (padres)
+     */
+    public function alineadoPor()
+    {
+        return $this->belongsToMany(
+            ObjetivoInstitucional::class,
+            'alineacion_objetivos',
+            'objetivo_alineado_id',
+            'objetivo_id'
         );
     }
 }

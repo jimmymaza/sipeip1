@@ -10,13 +10,11 @@ use Illuminate\Validation\Rules\Password as PasswordRules;
 
 class NewPasswordController extends Controller
 {
-    // Mostrar formulario para ingresar nueva contraseña
     public function create(Request $request)
     {
         return view('auth.reset-password', ['request' => $request]);
     }
 
-    // Procesar el reseteo de contraseña
     public function store(Request $request)
     {
         $request->validate([
@@ -25,11 +23,11 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', PasswordRules::defaults()],
         ]);
 
-        $status = Password::reset(
+        $status = Password::broker('usuarios')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'Clave' => Hash::make($password),  // campo personalizado para la contraseña
                 ])->save();
             }
         );

@@ -17,4 +17,9 @@ class Institucion extends Model
         'NivelGobierno',
         'Estado',
     ];
+
+    // Cast para que Estado se maneje como booleano (true/false)
+    protected $casts = [
+        'Estado' => 'boolean',
+    ];
 }

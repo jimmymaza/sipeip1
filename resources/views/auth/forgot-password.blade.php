@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Restablecer Contraseña - SIPeIP1</title>
+    <title>Recuperar Contraseña | SIPeIP1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         body {
-            background: #0b0f1a;
-            color: #0ff;
+            background-color: #0b0f1a;
+            color: #00ffff;
             font-family: 'Orbitron', sans-serif;
             display: flex;
             justify-content: center;
@@ -17,111 +19,93 @@
         }
 
         .container {
-            background: rgba(0, 20, 40, 0.9);
-            padding: 30px;
-            border-radius: 20px;
-            width: 320px;
-            box-shadow: 0 0 15px #00ffff88;
+            background-color: #112;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            width: 100%;
+            max-width: 400px;
             text-align: center;
         }
 
         h2 {
-            margin-bottom: 20px;
-            color: #00ffff;
-            text-shadow:
-                0 0 6px #00ffff,
-                0 0 12px #00ffff;
+            margin-bottom: 25px;
         }
 
         form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
         }
 
-        input[type="text"], input[type="email"], input[type="password"] {
-            padding: 10px;
-            border-radius: 6px;
+        input[type="email"] {
+            padding: 12px;
+            margin-bottom: 20px;
             border: none;
-            font-size: 1rem;
+            border-radius: 8px;
+            background-color: #1e2a38;
+            color: #0ff;
         }
 
         button {
-            background: #00ffff;
-            color: #001f2f;
-            font-weight: 700;
+            background-color: #00ffff;
+            color: #000;
+            font-weight: bold;
+            padding: 12px;
             border: none;
-            padding: 10px 0;
-            border-radius: 35px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background: #00cccc;
+            background-color: #00cccc;
         }
 
-        .message {
+        .back-link {
+            margin-top: 20px;
+            display: inline-block;
+            color: #00ffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .status, .error {
             margin-bottom: 15px;
-            color: #0f0;
-            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            color: #00ff88;
         }
 
         .error {
-            color: #ff4444;
-            margin-bottom: 15px;
-            font-weight: 600;
+            color: #ff0066;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Recuperar Contraseña</h2>
 
-<div class="container">
-    <h2>Restablecer Contraseña</h2>
+        @if (session('status'))
+            <div class="status">{{ session('status') }}</div>
+        @endif
 
-    @if (session('status'))
-        <div class="message">{{ session('status') }}</div>
-    @endif
+        @if ($errors->any())
+            <div class="error">
+                @foreach ($errors->all() as $error)
+                    {{ $error }}
+                @endforeach
+            </div>
+        @endif
 
-    @if ($errors->any())
-        <div class="error">{{ $errors->first() }}</div>
-    @endif
+        <form method="POST" action="{{ route('password.email') }}">
+            @csrf
+            <input type="email" name="email" placeholder="Correo electrónico" required autofocus>
+            <button type="submit">Enviar enlace de recuperación</button>
+        </form>
 
-    <form method="POST" action="{{ route('password.update') }}">
-        @csrf
-
-        <input type="hidden" name="token" value="{{ request()->route('token') }}">
-
-        <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="Ingrese su correo"
-            value="{{ old('email') }}"
-            required
-            autofocus
-        >
-
-        <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Nueva contraseña"
-            required
-        >
-
-        <input
-            id="password_confirmation"
-            name="password_confirmation"
-            type="password"
-            placeholder="Confirmar contraseña"
-            required
-        >
-
-        <button type="submit">Actualizar contraseña</button>
-    </form>
-</div>
-
+        <a class="back-link" href="{{ route('login') }}">← Volver al Login</a>
+    </div>
 </body>
 </html>

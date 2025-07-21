@@ -31,9 +31,20 @@
            style="width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;">
 
     <label for="Subsector" style="font-weight: bold; display: block; margin-bottom: 6px;">Subsector</label>
-    <input type="text" id="Subsector" name="Subsector" 
-           value="{{ old('Subsector', $institucion->Subsector) }}" required 
-           style="width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;">
+    <select
+        id="Subsector"
+        name="Subsector"
+        required
+        style="width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;"
+    >
+        <option value="" disabled {{ old('Subsector', $institucion->Subsector) ? '' : 'selected' }}>Seleccione un subsector</option>
+        @foreach($subsectores as $subsector)
+            <option value="{{ $subsector }}" 
+                {{ (old('Subsector', $institucion->Subsector) == $subsector) ? 'selected' : '' }}>
+                {{ $subsector }}
+            </option>
+        @endforeach
+    </select>
 
     <label for="NivelGobierno" style="font-weight: bold; display: block; margin-bottom: 6px;">Nivel de Gobierno</label>
     <select id="NivelGobierno" name="NivelGobierno" required
@@ -47,9 +58,9 @@
     <label for="Estado" style="font-weight: bold; display: block; margin-bottom: 6px;">Estado</label>
     <select id="Estado" name="Estado" required
             style="width: 100%; padding: 10px 12px; margin-bottom: 30px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;">
-      <option value="" disabled {{ old('Estado', $institucion->Estado) ? '' : 'selected' }}>Seleccione estado</option>
-      <option value="Activo" {{ (old('Estado', $institucion->Estado) == 'Activo') ? 'selected' : '' }}>Activo</option>
-      <option value="Inactivo" {{ (old('Estado', $institucion->Estado) == 'Inactivo') ? 'selected' : '' }}>Inactivo</option>
+      <option value="" disabled {{ old('Estado', (string)$institucion->Estado) === '' ? 'selected' : '' }}>Seleccione estado</option>
+      <option value="1" {{ old('Estado', (string)$institucion->Estado) === '1' ? 'selected' : '' }}>Activo</option>
+      <option value="0" {{ old('Estado', (string)$institucion->Estado) === '0' ? 'selected' : '' }}>Inactivo</option>
     </select>
 
     <button type="submit" 

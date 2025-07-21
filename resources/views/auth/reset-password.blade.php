@@ -62,6 +62,12 @@
             background: #00cccc;
         }
 
+        .message {
+            margin-bottom: 15px;
+            color: #0f0;
+            font-weight: 600;
+        }
+
         .error {
             color: #ff4444;
             margin-bottom: 15px;
@@ -74,6 +80,10 @@
 
 <div class="container">
     <h2>Restablecer Contraseña</h2>
+
+    @if (session('status'))
+        <div class="message">{{ session('status') }}</div>
+    @endif
 
     @if ($errors->any())
         <div class="error">

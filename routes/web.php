@@ -3,65 +3,117 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+// Controladores
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\NewPasswordController;
-
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\InstitucionController;
-
 use App\Http\Controllers\ObjetivoInstitucionalController;
-use App\Http\Controllers\ObjetivoPNDController;
-use App\Http\Controllers\ObjetivoODSController;
-use App\Http\Controllers\AlineacionObjetivoController;
 use App\Http\Controllers\MetaController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\ProgramaController;
+use App\Http\Controllers\AlineacionObjetivoController;
+use App\Http\Controllers\ReporteController;
 
-// Ruta raíz: si está autenticado va al dashboard, si no, al login
+/*
+|--------------------------------------------------------------------------
+| Rutas Públicas (sin autenticación)
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return Auth::check()
         ? redirect()->route('dashboard')
         : redirect()->route('login');
-});
+})->name('root');
 
-// Rutas para invitados (no autenticados)
+// Login y recuperación de contraseña
 Route::middleware('guest')->group(function () {
-    // Login
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
-    // Recuperación de contraseña con prefijo /password
     Route::prefix('password')->name('password.')->group(function () {
-        // Ruta GET para forgot que muestra solo un mensaje simple
-        Route::get('/forgot', function () {
-            return view('auth.passwords.simple-recovery-message'); // Aquí va tu vista con el mensaje y botón
-        })->name('request');
-
-        // Ruta POST para envío real del email de recuperación (opcional)
-        Route::post('/forgot', [PasswordResetLinkController::class, 'store'])->name('email');
-
-        // Rutas para reset con token
-        Route::get('/reset/{token}', [NewPasswordController::class, 'create'])->name('reset');
-        Route::post('/reset', [NewPasswordController::class, 'store'])->name('update');
+        Route::get('/forgot', [App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])->name('request');
+        Route::post('/forgot', [App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->name('email');
+        Route::get('/reset/{token}', [App\Http\Controllers\Auth\NewPasswordController::class, 'create'])->name('reset');
+        Route::post('/reset', [App\Http\Controllers\Auth\NewPasswordController::class, 'store'])->name('update');
     });
 });
 
-// Rutas para usuarios autenticados
+/*
+|--------------------------------------------------------------------------
+| Rutas Protegidas (requieren autenticación)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
+
+    // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resources([
-        'roles' => RolController::class,
-        'usuarios' => UsuarioController::class,
-        'instituciones' => InstitucionController::class,
-        'objetivo-institucional' => ObjetivoInstitucionalController::class,
-        'objetivo-pnd' => ObjetivoPNDController::class,
-        'objetivo-ods' => ObjetivoODSController::class,
-        'alineacion' => AlineacionObjetivoController::class,
-        'metas' => MetaController::class,
-        'proyectos' => ProyectoController::class,
+    // Redirecciones para evitar error por falta de parámetro {tipo}
+    Route::redirect('/objetivos', '/objetivos/institucional')->name('objetivos.default');
+    Route::redirect('/objetivos/create', '/objetivos/institucional/create')->name('objetivos.create.default');
+
+    // Usuarios y Roles
+    Route::resource('roles', RolController::class);
+    Route::resource('usuarios', UsuarioController::class);
+
+    // Instituciones
+    Route::resource('instituciones', InstitucionController::class);
+
+    // Objetivos por tipo con prefijo y nombre
+    Route::prefix('objetivos/{tipo}')->name('objetivos.')->group(function () {
+        Route::get('/', [ObjetivoInstitucionalController::class, 'index'])->name('index');
+        Route::get('/create', [ObjetivoInstitucionalController::class, 'create'])->name('create');
+        Route::post('/', [ObjetivoInstitucionalController::class, 'store'])->name('store');
+        Route::get('/{objetivo}/edit', [ObjetivoInstitucionalController::class, 'edit'])->name('edit');
+        Route::put('/{objetivo}', [ObjetivoInstitucionalController::class, 'update'])->name('update');
+        Route::delete('/{objetivo}', [ObjetivoInstitucionalController::class, 'destroy'])->name('destroy');
+        Route::get('/{objetivo}', [ObjetivoInstitucionalController::class, 'show'])->name('show');
+
+        // Alineaciones anidadas por objetivo
+        Route::prefix('{objetivo}/alineaciones')->name('alineaciones.')->group(function () {
+            Route::get('/', [AlineacionObjetivoController::class, 'index'])->name('index');
+            Route::get('/create', [AlineacionObjetivoController::class, 'create'])->name('create');
+            Route::post('/', [AlineacionObjetivoController::class, 'store'])->name('store');
+            Route::get('/{alineacion}/edit', [AlineacionObjetivoController::class, 'edit'])->name('edit');
+            Route::put('/{alineacion}', [AlineacionObjetivoController::class, 'update'])->name('update');
+            Route::delete('/{alineacion}', [AlineacionObjetivoController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+    // Metas
+    Route::resource('metas', MetaController::class);
+
+    // Planes
+    Route::resource('planes', PlanController::class)->parameters([
+        'planes' => 'plan',
     ]);
+
+    // Programas
+    Route::resource('programas', ProgramaController::class);
+
+    // Proyectos
+    Route::resource('proyectos', ProyectoController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reportes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('reportes')->name('reportes.')->group(function () {
+        Route::get('/', [ReporteController::class, 'index'])->name('index');
+
+        // Ruta para generar reportes y también exportar PDF, según parámetro 'action'
+        Route::match(['get', 'post'], '/generar', [ReporteController::class, 'generar'])->name('generar');
+
+        // Si no tienes un método separado para exportar PDF, no incluyas esta ruta
+        // Route::post('/exportar/pdf', [ReporteController::class, 'exportarPDF'])->name('exportar.pdf');
+    });
+
 });

@@ -2,73 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\AlineacionObjetivo;
 use App\Models\ObjetivoInstitucional;
-use App\Models\ObjetivoPND;
-use App\Models\ObjetivoODS;
+use Illuminate\Http\Request;
 
 class AlineacionObjetivoController extends Controller
 {
-    public function index()
+    // Mostrar todas las alineaciones de un objetivo con paginación
+    public function index(string $tipo, ObjetivoInstitucional $objetivo)
     {
-        $alineaciones = AlineacionObjetivo::with(['objetivoInstitucional', 'objetivoPND', 'objetivoODS'])->get();
-        return view('alineacion.index', compact('alineaciones'));
+        // Cargar alineaciones con la relación objetivo alineado y paginar resultados
+        $alineaciones = AlineacionObjetivo::where('objetivo_id', $objetivo->id)
+            ->with('objetivoAlineado')
+            ->paginate(10); // <- aquí paginate en vez de get()
+
+        return view('alineaciones.index', compact('tipo', 'objetivo', 'alineaciones'));
     }
 
-    public function create()
+    // Formulario para crear alineación
+    public function create(string $tipo, ObjetivoInstitucional $objetivo)
     {
-        $objetivosInstitucionales = ObjetivoInstitucional::all();
-        $objetivosPND = ObjetivoPND::all();
-        $objetivosODS = ObjetivoODS::all();
+        // Posibles objetivos para alinear (puedes ajustar el filtro según tu lógica)
+        $objetivosPosibles = ObjetivoInstitucional::where('id', '!=', $objetivo->id)->get();
 
-        return view('alineacion.create', compact('objetivosInstitucionales', 'objetivosPND', 'objetivosODS'));
+        return view('alineaciones.create', compact('tipo', 'objetivo', 'objetivosPosibles'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'objetivo_institucional_id' => 'required|exists:objetivo_institucionals,IdObjetivo',
-            'objetivo_pnd_id'           => 'required|exists:objetivo_pnds,id',
-            'objetivo_ods_id'           => 'required|exists:objetivo_o_d_s,id',
-        ]);
-
-        AlineacionObjetivo::create($request->all());
-
-        return redirect()->route('alineacion.index')->with('success', 'Alineación creada correctamente.');
-    }
-
-    public function show(AlineacionObjetivo $alineacion)
-    {
-        $alineacion->load(['objetivoInstitucional', 'objetivoPND', 'objetivoODS']);
-        return view('alineacion.show', compact('alineacion'));
-    }
-
-    public function edit(AlineacionObjetivo $alineacion)
-    {
-        $objetivosInstitucionales = ObjetivoInstitucional::all();
-        $objetivosPND = ObjetivoPND::all();
-        $objetivosODS = ObjetivoODS::all();
-
-        return view('alineacion.edit', compact('alineacion', 'objetivosInstitucionales', 'objetivosPND', 'objetivosODS'));
-    }
-
-    public function update(Request $request, AlineacionObjetivo $alineacion)
+    // Guardar alineación
+    public function store(Request $request, string $tipo, ObjetivoInstitucional $objetivo)
     {
         $request->validate([
-            'objetivo_institucional_id' => 'required|exists:objetivo_institucionals,IdObjetivo',
-            'objetivo_pnd_id'           => 'required|exists:objetivo_pnds,id',
-            'objetivo_ods_id'           => 'required|exists:objetivo_o_d_s,id',
+            'objetivo_alineado_id' => 'required|exists:objetivos_institucionales,id',
+            'tipo_alineacion' => 'required|string|max:50',
         ]);
 
-        $alineacion->update($request->all());
+        // Evitar duplicados
+        $exists = AlineacionObjetivo::where('objetivo_id', $objetivo->id)
+            ->where('objetivo_alineado_id', $request->objetivo_alineado_id)
+            ->where('tipo_alineacion', $request->tipo_alineacion)
+            ->exists();
 
-        return redirect()->route('alineacion.index')->with('success', 'Alineación actualizada correctamente.');
+        if ($exists) {
+            return redirect()->back()->withErrors(['objetivo_alineado_id' => 'Esta alineación ya existe para este tipo.'])->withInput();
+        }
+
+        AlineacionObjetivo::create([
+            'objetivo_id' => $objetivo->id,
+            'objetivo_alineado_id' => $request->objetivo_alineado_id,
+            'tipo_alineacion' => $request->tipo_alineacion,
+        ]);
+
+        return redirect()->route('objetivos.alineaciones.index', ['tipo' => $tipo, 'objetivo' => $objetivo->id])
+                         ->with('success', 'Alineación creada correctamente.');
     }
 
-    public function destroy(AlineacionObjetivo $alineacion)
-    {
-        $alineacion->delete();
-        return redirect()->route('alineacion.index')->with('success', 'Alineación eliminada correctamente.');
-    }
+    // Métodos futuros: edit, update, destroy
 }

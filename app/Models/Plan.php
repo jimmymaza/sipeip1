@@ -6,48 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class Plan extends Model
 {
-    protected $table = 'plan';
-    protected $primaryKey = 'IdPlan';
-    public $timestamps = false;
+    protected $table = 'planes';
 
     protected $fillable = [
-        'NombrePlan',
-        'Descripcion',
-        'FechaCreacion',
-        'Estado',
-        'IdUsuario', // ¿Este campo es para autor o responsable?
-        'Cedula',   // Relacionado a Usuario
-        'IdRevision',
-        // No incluyo IdObjetivo porque tienes varios tipos
+        'codigo',
+        'nombre',
+        'descripcion',
+        'estado',
+        'fecha_inicio',
+        'fecha_fin',
     ];
 
-    // Relación con Usuario (responsable o creador)
-    public function usuario()
+    // Un plan puede tener muchas metas
+    public function metas()
     {
-        return $this->belongsTo(User::class, 'Cedula', 'Cedula');
+        return $this->hasMany(Meta::class, 'plan_id');
     }
 
-    // Relación con Revision
-    public function revision()
+    // Un plan pertenece a muchos objetivos institucionales
+    public function objetivos()
     {
-        return $this->belongsTo(Revision::class, 'IdRevision', 'IdRevision');
+        return $this->belongsToMany(ObjetivoInstitucional::class, 'objetivo_plan', 'plan_id', 'objetivo_id');
     }
 
-    // Relación con Objetivos Institucionales (múltiples)
-    public function objetivosInstitucionales()
-    {
-        return $this->hasMany(ObjetivoInstitucional::class, 'IdPlan', 'IdPlan');
-    }
-
-    // Relación con Objetivos PND (múltiples)
-    public function objetivosPND()
-    {
-        return $this->hasMany(ObjetivoPND::class, 'IdPlan', 'IdPlan');
-    }
-
-    // Relación con Objetivos ODS (múltiples)
-    public function objetivosODS()
-    {
-        return $this->hasMany(ObjetivoODS::class, 'IdPlan', 'IdPlan');
-    }
+    // Relación con proyectos (opcional)
+    // public function proyectos()
+    // {
+    //     return $this->hasMany(Proyecto::class, 'plan_id');
+    // }
 }

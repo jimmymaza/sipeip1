@@ -2,33 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AlineacionObjetivo extends Model
 {
-    use HasFactory;
-
     protected $table = 'alineacion_objetivos';
 
     protected $fillable = [
-        'objetivo_institucional_id',
-        'objetivo_pnd_id',
-        'objetivo_ods_id',
+        'objetivo_id',
+        'objetivo_alineado_id',
+        'tipo_alineacion', // Agregado para permitir asignación masiva
     ];
 
-    public function objetivoInstitucional()
+    // Relación con el objetivo base
+    public function objetivo()
     {
-        return $this->belongsTo(ObjetivoInstitucional::class, 'objetivo_institucional_id');
+        return $this->belongsTo(ObjetivoInstitucional::class, 'objetivo_id');
     }
 
-    public function objetivoPND()
+    // Relación con el objetivo alineado
+    public function objetivoAlineado()
     {
-        return $this->belongsTo(ObjetivoPND::class, 'objetivo_pnd_id');
-    }
-
-    public function objetivoODS()
-    {
-        return $this->belongsTo(ObjetivoODS::class, 'objetivo_ods_id');
+        return $this->belongsTo(ObjetivoInstitucional::class, 'objetivo_alineado_id');
     }
 }

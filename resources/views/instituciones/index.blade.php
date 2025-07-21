@@ -35,7 +35,7 @@
         <td style="padding: 10px 15px;">{{ $institucion->Codigo }}</td>
         <td style="padding: 10px 15px;">{{ $institucion->Subsector }}</td>
         <td style="padding: 10px 15px;">{{ $institucion->NivelGobierno }}</td>
-        <td style="padding: 10px 15px;">{{ $institucion->Estado }}</td>
+        <td>{{ $institucion->Estado ? 'Activo' : 'Inactivo' }}</td>
         <td style="padding: 10px 15px; text-align: center; white-space: nowrap;">
           <a href="{{ route('instituciones.edit', $institucion->IdInstitucion) }}" 
              style="text-decoration: none; color: #2563eb; margin-right: 12px; font-weight: 600;"
