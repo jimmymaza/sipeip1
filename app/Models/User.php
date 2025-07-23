@@ -34,6 +34,7 @@ class User extends Authenticatable implements CanResetPassword
         'Clave',
     ];
 
+    // Sobrescribir para usar el campo 'Clave' como password
     public function getAuthPassword()
     {
         return $this->Clave;
@@ -54,13 +55,43 @@ class User extends Authenticatable implements CanResetPassword
         return $this->getAttribute($this->getAuthIdentifierName());
     }
 
+    // Relación con Rol (modelo Rol debe existir)
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'IdRol', 'IdRol');
     }
 
+    // Relación con Institucion (modelo Institucion debe existir)
     public function institucion()
     {
         return $this->belongsTo(Institucion::class, 'IdInstitucion', 'IdInstitucion');
+    }
+
+    /**
+     * Obtener los nombres de módulos con acceso completo asignados al usuario por su rol
+     *
+     * @return array
+     */
+    public function modulosCompletos(): array
+    {
+        if (!$this->rol) {
+            return [];
+        }
+
+        return $this->rol->modulos()
+            ->wherePivot('AccesoCompleto', 1)  // asumiendo boolean en BD
+            ->pluck('Nombre')
+            ->toArray();
+    }
+
+    /**
+     * Verificar si el usuario tiene acceso a un módulo específico
+     *
+     * @param string $nombreModulo
+     * @return bool
+     */
+    public function tieneAccesoModulo(string $nombreModulo): bool
+    {
+        return in_array($nombreModulo, $this->modulosCompletos());
     }
 }

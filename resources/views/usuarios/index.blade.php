@@ -9,6 +9,7 @@
     <i class="fas fa-plus" aria-hidden="true"></i> Crear Nuevo Usuario
   </a>
 
+  <!-- Mensaje de éxito para creado/eliminado -->
   @if(session('success'))
     <div class="alert-success">
       {{ session('success') }}
@@ -78,6 +79,7 @@
 </div>
 
 <style>
+  /* --- Aquí va todo tu CSS sin cambios --- */
   /* Contenedor general - pegado más a la izquierda, poco margen */
   .container-users {
     max-width: 100%;

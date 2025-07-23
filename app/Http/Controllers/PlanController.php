@@ -14,8 +14,8 @@ class PlanController extends Controller
      */
     public function index()
     {
-        // Obtener planes con sus relaciones 'objetivos' y 'metas' paginados
-        $planes = Plan::with(['objetivos', 'metas'])->paginate(10);
+        // Obtener planes con la relación 'objetivos' paginados, sin 'metas'
+        $planes = Plan::with('objetivos')->paginate(10);
 
         return view('planes.index', compact('planes'));
     }
@@ -116,7 +116,8 @@ class PlanController extends Controller
      */
     public function show(Plan $plan)
     {
-        $plan->load(['objetivos', 'metas']);
+        // Cargar solo 'objetivos', sin 'metas'
+        $plan->load('objetivos');
 
         return view('planes.show', compact('plan'));
     }

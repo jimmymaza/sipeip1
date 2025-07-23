@@ -9,6 +9,8 @@
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
   />
 
   <style>
@@ -216,14 +218,28 @@
       Sistema Integrado de Planificación e Inversión Pública - SIPeIP1
     </div>
     <div class="top-menu">
-      <div class="user-info" title="Usuario autenticado">
-        <i class="fas fa-user-circle"></i>
+      <div class="user-info" title="Usuario autenticado" aria-label="Usuario autenticado">
+        <i class="fas fa-user-circle" aria-hidden="true"></i>
         Usuario: {{ Auth::user()->Nombre }} {{ Auth::user()->Apellido }}
       </div>
 
-      <a href="{{ route('roles.index') }}">Módulo de Roles</a>
-      <a href="{{ route('usuarios.index') }}">Módulo de Usuarios</a>
-      <a href="{{ route('instituciones.index') }}">Módulo de Configuración Institucional</a>
+      {{-- Sólo mostrar estos enlaces para rol 1 (Administrador) --}}
+      @if(Auth::user()->IdRol == 1)
+        <a href="{{ route('roles.index') }}">Módulo de Roles</a>
+        <a href="{{ route('usuarios.index') }}">Módulo de Usuarios</a>
+        <a href="{{ route('instituciones.index') }}">Módulo de Configuración Institucional</a>
+      @endif
+
+      {{-- Para rol técnico (2), sólo algunos módulos --}}
+      @if(Auth::user()->IdRol == 2)
+        <a href="{{ route('usuarios.index') }}">Módulo de Usuarios</a>
+        <a href="{{ route('instituciones.index') }}">Módulo de Configuración Institucional</a>
+      @endif
+
+      {{-- Para rol lector (3), sólo Configuración Institucional --}}
+      @if(Auth::user()->IdRol == 3)
+        <a href="{{ route('instituciones.index') }}">Módulo de Configuración Institucional</a>
+      @endif
 
       <form
         id="logout-form"
@@ -249,7 +265,7 @@
         $objetivosActive = true;
     }
 
-    $proyectosActive = request()->routeIs('planes.*') || request()->routeIs('proyectos.*') || request()->routeIs('programas.*');
+    $proyectosActive = request()->routeIs('planes.*') || request()->routeIs('proyectos.*') || request()->routeIs('programas.*') || request()->routeIs('cronogramas.*') || request()->routeIs('presupuestos.*');
     $alineacionesActive = request()->routeIs('objetivos.alineaciones.*');
 
     $tipoParam = $tipo ?? null;
@@ -260,6 +276,8 @@
     <nav class="sidebar" role="navigation" aria-label="Menú principal">
       <h3>Módulos</h3>
       <ul>
+        {{-- Módulo de Roles: solo para administradores (IdRol = 1) --}}
+        @if(Auth::user()->IdRol == 1)
         <li class="has-submenu {{ request()->routeIs('roles.*') ? 'open' : '' }}">
           <a
             href="{{ route('roles.index') }}"
@@ -268,11 +286,14 @@
             aria-haspopup="true"
             tabindex="0"
           >
-            <i class="fas fa-user-shield"></i> Módulo de Roles
+            <i class="fas fa-user-shield" aria-hidden="true"></i> Módulo de Roles
             <span class="toggle-icon" aria-hidden="true">▶</span>
           </a>
         </li>
+        @endif
 
+        {{-- Módulo de Usuarios: para administradores y técnicos (IdRol = 1 o 2) --}}
+        @if(in_array(Auth::user()->IdRol, [1, 2]))
         <li class="has-submenu {{ request()->routeIs('usuarios.*') ? 'open' : '' }}">
           <a
             href="{{ route('usuarios.index') }}"
@@ -281,21 +302,25 @@
             aria-haspopup="true"
             tabindex="0"
           >
-            <i class="fas fa-users"></i> Módulo de Usuarios
+            <i class="fas fa-users" aria-hidden="true"></i> Módulo de Usuarios
             <span class="toggle-icon" aria-hidden="true">▶</span>
           </a>
         </li>
+        @endif
 
+        {{-- Módulo Configuración Institucional: para todos --}}
         <li>
           <a
             href="{{ route('instituciones.index') }}"
             class="menu-link {{ request()->routeIs('instituciones.*') ? 'active' : '' }}"
             tabindex="0"
           >
-            <i class="fas fa-cogs"></i> Módulo de Configuración Institucional
+            <i class="fas fa-cogs" aria-hidden="true"></i> Módulo de Configuración Institucional
           </a>
         </li>
 
+        {{-- Módulo de Gestión de Objetivos Estratégicos: para administradores y técnicos --}}
+        @if(in_array(Auth::user()->IdRol, [1, 2]))
         <li class="has-submenu {{ $objetivosActive ? 'open' : '' }}">
           <a
             href="#"
@@ -304,7 +329,7 @@
             aria-haspopup="true"
             aria-expanded="{{ $objetivosActive ? 'true' : 'false' }}"
           >
-            <i class="fas fa-bullseye"></i> Módulo de Gestión de Objetivos Estratégicos
+            <i class="fas fa-bullseye" aria-hidden="true"></i> Módulo de Gestión de Objetivos Estratégicos
             <span class="toggle-icon" aria-hidden="true">▶</span>
           </a>
           <ul
@@ -319,7 +344,7 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-building"></i> Objetivos Institucionales
+                <i class="fas fa-building" aria-hidden="true"></i> Objetivos Institucionales
               </a>
             </li>
             <li role="none">
@@ -329,7 +354,7 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-flag"></i> Objetivos del Plan Nacional de Desarrollo
+                <i class="fas fa-flag" aria-hidden="true"></i> Objetivos del Plan Nacional de Desarrollo
               </a>
             </li>
             <li role="none">
@@ -339,7 +364,7 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-globe"></i> Objetivos de Desarrollo Sostenible (ODS)
+                <i class="fas fa-globe" aria-hidden="true"></i> Objetivos de Desarrollo Sostenible (ODS)
               </a>
             </li>
 
@@ -352,13 +377,16 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-link"></i> Alineaciones
+                <i class="fas fa-link" aria-hidden="true"></i> Alineaciones
               </a>
             </li>
             @endif
           </ul>
         </li>
+        @endif
 
+        {{-- Módulo de Proyectos de Inversión (Planes, Proyectos y Programas): para administradores y técnicos --}}
+        @if(in_array(Auth::user()->IdRol, [1, 2]))
         <li class="has-submenu {{ $proyectosActive ? 'open' : '' }}">
           <a
             href="#"
@@ -367,7 +395,7 @@
             aria-haspopup="true"
             aria-expanded="{{ $proyectosActive ? 'true' : 'false' }}"
           >
-            <i class="fas fa-project-diagram"></i> Módulo de Proyectos de Inversión (Proyectos y Planes)
+            <i class="fas fa-project-diagram" aria-hidden="true"></i> Módulo de Proyectos de Inversión (Planes, Proyectos y Programas)
             <span class="toggle-icon" aria-hidden="true">▶</span>
           </a>
           <ul
@@ -382,7 +410,7 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-file-alt"></i> Planes
+                <i class="fas fa-file-alt" aria-hidden="true"></i> Planes
               </a>
             </li>
             <li role="none">
@@ -392,7 +420,7 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-tasks"></i> Proyectos
+                <i class="fas fa-tasks" aria-hidden="true"></i> Proyectos
               </a>
             </li>
             <li role="none">
@@ -402,19 +430,74 @@
                 role="menuitem"
                 tabindex="0"
               >
-                <i class="fas fa-layer-group"></i> Programas
+                <i class="fas fa-layer-group" aria-hidden="true"></i> Programas
+              </a>
+            </li>
+            <li role="none">
+              <a
+                href="{{ route('cronogramas.index') }}"
+                class="menu-link {{ request()->routeIs('cronogramas.*') ? 'active' : '' }}"
+                role="menuitem"
+                tabindex="0"
+              >
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i> Cronograma
+              </a>
+            </li>
+            <li role="none">
+              <a
+                href="{{ route('presupuestos.index') }}"
+                class="menu-link {{ request()->routeIs('presupuestos.*') ? 'active' : '' }}"
+                role="menuitem"
+                tabindex="0"
+              >
+                <i class="fas fa-dollar-sign" aria-hidden="true"></i> Presupuesto
               </a>
             </li>
           </ul>
         </li>
+        @endif
 
+        {{-- Módulo de Vinculaciones: para administradores y técnicos --}}
+        @if(in_array(Auth::user()->IdRol, [1, 2]))
+        <li class="has-submenu {{ request()->routeIs('vinculaciones.*') || request()->routeIs('metas.*') || request()->routeIs('indicadores.*') ? 'open' : '' }}">
+          <a
+            href="#"
+            class="menu-link"
+            tabindex="0"
+            aria-haspopup="true"
+            aria-expanded="{{ request()->routeIs('vinculaciones.*') || request()->routeIs('metas.*') || request()->routeIs('indicadores.*') ? 'true' : 'false' }}"
+          >
+            <i class="fas fa-link" aria-hidden="true"></i> Módulo de Vinculaciones
+            <span class="toggle-icon" aria-hidden="true">▶</span>
+          </a>
+          <ul class="submenu" role="menu" aria-label="Submenú de vinculaciones">
+            <li role="none">
+              <a href="{{ route('vinculaciones.index') }}" class="menu-link {{ request()->routeIs('vinculaciones.*') ? 'active' : '' }}" role="menuitem" tabindex="0">
+                <i class="fas fa-link" aria-hidden="true"></i> Vinculaciones
+              </a>
+            </li>
+            <li role="none">
+              <a href="{{ route('metas.index') }}" class="menu-link {{ request()->routeIs('metas.*') ? 'active' : '' }}" role="menuitem" tabindex="0">
+                <i class="fas fa-bullseye" aria-hidden="true"></i> Metas
+              </a>
+            </li>
+            <li role="none">
+              <a href="{{ route('indicadores.index') }}" class="menu-link {{ request()->routeIs('indicadores.*') ? 'active' : '' }}" role="menuitem" tabindex="0">
+                <i class="fas fa-chart-line" aria-hidden="true"></i> Indicadores
+              </a>
+            </li>
+          </ul>
+        </li>
+        @endif
+
+        {{-- Módulo de Reportes: para todos los roles --}}
         <li>
           <a
             href="{{ route('reportes.index') }}"
             class="menu-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}"
             tabindex="0"
           >
-            <i class="fas fa-chart-bar"></i> Módulo de Reportes
+            <i class="fas fa-chart-bar" aria-hidden="true"></i> Módulo de Reportes
           </a>
         </li>
       </ul>
@@ -463,34 +546,13 @@
           }
         });
 
-        // Click en icono toggle también abre/cierra submenu
-        if (toggleIcon) {
-          toggleIcon.addEventListener("click", e => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-          });
-        }
-
-        // Soporte para teclado (Enter o espacio) SOLO SI href="#" (no redirigir)
+        // Teclado: Enter o Space para abrir/cerrar submenu
         link.addEventListener("keydown", e => {
-          if ((e.key === "Enter" || e.key === " ") && link.getAttribute("href") === "#") {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             toggleMenu();
           }
         });
-      });
-
-      // Cerrar submenus al hacer click fuera de la sidebar
-      document.addEventListener("click", (e) => {
-        if (!sidebar.contains(e.target)) {
-          items.forEach(item => {
-            item.classList.remove("open");
-            const link = item.querySelector("a.menu-link");
-            if (link) link.setAttribute("aria-expanded", "false");
-          });
-          openItem = null;
-        }
       });
     });
   </script>

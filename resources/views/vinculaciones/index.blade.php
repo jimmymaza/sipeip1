@@ -2,7 +2,7 @@
 
 @section('content')
 <div style="max-width: 1100px; margin: 30px 0 30px 10px; padding: 0 10px; font-family: Arial, sans-serif;">
-  <h1 style="margin-bottom: 20px; color: #1e40af; font-weight: 700;">Listado de Metas</h1>
+  <h1 style="margin-bottom: 20px; color: #1e40af; font-weight: 700;">Listado de Vinculaciones</h1>
 
   @if (session('success'))
     <div style="margin-bottom: 20px; background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; padding: 12px 18px; border-radius: 5px;">
@@ -11,36 +11,38 @@
     </div>
   @endif
 
-  <a href="{{ route('metas.create') }}" 
+  <a href="{{ route('vinculaciones.create') }}" 
      style="display: inline-block; margin-bottom: 15px; background-color: #2563eb; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: 700;">
-    <i class="fas fa-plus" aria-hidden="true"></i> Crear Nueva Meta
+    <i class="fas fa-plus" aria-hidden="true"></i> Crear Nueva Vinculación
   </a>
 
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 1rem;">
     <thead>
       <tr style="background-color: #2563eb; color: white; font-weight: 700;">
         <th style="padding: 12px 15px; text-align: left;">ID</th>
-        <th style="padding: 12px 15px; text-align: left;">Descripción</th>
-        <th style="padding: 12px 15px; text-align: left;">Responsable</th>
+        <th style="padding: 12px 15px; text-align: left;">Objetivo Institucional</th>
+        <th style="padding: 12px 15px; text-align: left;">Meta</th>
+        <th style="padding: 12px 15px; text-align: left;">Indicador</th>
         <th style="padding: 12px 15px; text-align: center;">Acciones</th>
       </tr>
     </thead>
     <tbody>
-      @forelse ($metas as $meta)
+      @forelse ($vinculaciones as $vinculacion)
       <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s;">
-        <td style="padding: 10px 15px;">{{ $meta->id }}</td>
-        <td style="padding: 10px 15px;">{{ $meta->descripcion }}</td>
-        <td style="padding: 10px 15px;">{{ $meta->usuarioResponsable->Nombre ?? 'N/A' }}</td>
+        <td style="padding: 10px 15px;">{{ $vinculacion->id }}</td>
+        <td style="padding: 10px 15px;">{{ $vinculacion->objetivoInstitucional->nombre ?? 'N/A' }}</td>
+        <td style="padding: 10px 15px;">{{ $vinculacion->meta->nombre ?? 'N/A' }}</td>
+        <td style="padding: 10px 15px;">{{ $vinculacion->indicador->nombre ?? 'N/A' }}</td>
         <td style="padding: 10px 15px; text-align: center; white-space: nowrap;">
-          <a href="{{ route('metas.edit', $meta->id) }}" 
+          <a href="{{ route('vinculaciones.edit', $vinculacion->id) }}" 
              style="text-decoration: none; color: #2563eb; margin-right: 12px; font-weight: 600;">
             <i class="fas fa-edit" aria-hidden="true"></i> Editar
           </a>
 
           <button type="button" 
                   class="btn-delete" 
-                  data-id="{{ $meta->id }}" 
-                  data-nombre="{{ $meta->descripcion ?? 'Meta' }}"
+                  data-id="{{ $vinculacion->id }}" 
+                  data-nombre="{{ $vinculacion->nombre ?? 'Vinculación' }}"
                   style="background: none; border: none; color: #b91c1c; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
             <i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar
           </button>
@@ -48,7 +50,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="4" style="padding: 20px; text-align: center; color: #6b7280;">No hay metas registradas.</td>
+        <td colspan="5" style="padding: 20px; text-align: center; color: #6b7280;">No hay vinculaciones registradas.</td>
       </tr>
       @endforelse
     </tbody>
@@ -59,7 +61,7 @@
     <div class="modal-content" tabindex="-1">
       <h2 id="modal-title" style="color: #b91c1c; margin-bottom: 15px; font-weight: 700;">Confirmar eliminación</h2>
       <p id="modal-desc" style="font-size: 1rem;">
-        ¿Estás seguro que deseas eliminar la meta: <strong id="modal-meta-nombre"></strong>?
+        ¿Estás seguro que deseas eliminar la vinculación con: <strong id="modal-vinculacion-nombre"></strong>?
       </p>
       <form id="form-delete" method="POST" action="" style="margin-top: 20px;">
         @csrf
@@ -123,7 +125,7 @@
   <script>
     const modal = document.getElementById('modal-delete');
     const formDelete = document.getElementById('form-delete');
-    const modalNombre = document.getElementById('modal-meta-nombre');
+    const modalNombre = document.getElementById('modal-vinculacion-nombre');
     const btnCancel = modal.querySelector('.btn-cancel');
     const btnConfirm = formDelete.querySelector('.btn-confirm');
 
@@ -133,7 +135,7 @@
         const nombre = button.getAttribute('data-nombre');
 
         modalNombre.textContent = nombre;
-        formDelete.action = "{{ url('metas') }}/" + id;
+        formDelete.action = "{{ url('vinculaciones') }}/" + id;
         
         modal.style.display = 'flex';
         btnConfirm.focus();

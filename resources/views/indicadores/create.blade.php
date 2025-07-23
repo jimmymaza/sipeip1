@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto p-4 max-w-xl">
-    <h1 class="text-2xl font-bold mb-4">Crear Nueva Meta</h1>
+    <h1 class="text-2xl font-bold mb-4">Crear Nuevo Indicador</h1>
 
     @if ($errors->any())
         <div class="bg-red-100 text-red-700 p-3 mb-4 rounded">
@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <form action="{{ route('metas.store') }}" method="POST">
+    <form action="{{ route('indicadores.store') }}" method="POST">
         @csrf
 
         <div class="mb-4">
@@ -35,7 +35,7 @@
         </div>
 
         <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Guardar</button>
-        <a href="{{ route('metas.index') }}" class="ml-4 text-gray-600 hover:underline">Cancelar</a>
+        <a href="{{ route('indicadores.index') }}" class="ml-4 text-gray-600 hover:underline">Cancelar</a>
     </form>
 </div>
 @endsection

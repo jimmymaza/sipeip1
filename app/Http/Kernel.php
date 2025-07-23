@@ -103,6 +103,7 @@ class Kernel extends HttpKernel
         // Control de cache mediante headers HTTP
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
 
-        // No hay middleware personalizado 'checkrole'
+        // Middleware personalizado para control de acceso a módulos
+        'checkmodulo' => \App\Http\Middleware\CheckModulo::class,
     ];
 }

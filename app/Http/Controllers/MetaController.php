@@ -3,84 +3,71 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meta;
-use App\Models\ObjetivoInstitucional;
-use App\Models\Plan;
+use App\Models\Indicador;
+use App\Models\User; // Agregar el modelo User
 use Illuminate\Http\Request;
 
 class MetaController extends Controller
 {
-    // Mostrar listado paginado de metas
     public function index()
     {
-        $metas = Meta::with(['objetivo', 'plan'])->paginate(10);
+        $metas = Meta::with('indicador')->paginate(10);
         return view('metas.index', compact('metas'));
     }
 
-    // Mostrar formulario para crear nueva meta
     public function create()
     {
-        $objetivos = ObjetivoInstitucional::where('estado', 'activo')->get();
-        $planes = Plan::where('estado', 'activo')->get();
-        return view('metas.create', compact('objetivos', 'planes'));
+        $indicadores = Indicador::where('estado', 'activo')->get();
+        $usuarios = User::all();  // Agregado para enviar usuarios
+        return view('metas.create', compact('indicadores', 'usuarios'));
     }
 
-    // Guardar nueva meta en BD
     public function store(Request $request)
     {
-        $request->validate([
-            'codigo' => 'required|string|max:20|unique:metas,codigo',
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
+        $validated = $request->validate([
+            'id_indicador' => 'required|exists:indicadores,id',
+            'anio' => 'required|integer|min:2000|max:2100',
+            'valor_objetivo' => 'required|numeric|min:0',
             'estado' => 'required|in:activo,inactivo',
-            'objetivo_id' => 'required|exists:objetivos_institucionales,id',
-            'plan_id' => 'nullable|exists:planes,id',
-            'fecha_inicio' => 'nullable|date',
-            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'usuario_responsable_id' => 'required|exists:users,id', // validar responsable
         ]);
 
-        Meta::create($request->all());
+        Meta::create($validated);
 
         return redirect()->route('metas.index')->with('success', 'Meta creada correctamente.');
     }
 
-    // Mostrar formulario para editar una meta
-    public function edit(Meta $meta)
+    public function show(Meta $meta)
     {
-        $objetivos = ObjetivoInstitucional::where('estado', 'activo')->get();
-        $planes = Plan::where('estado', 'activo')->get();
-        return view('metas.edit', compact('meta', 'objetivos', 'planes'));
+        $meta->load('indicador');
+        return view('metas.show', compact('meta'));
     }
 
-    // Actualizar meta en BD
+    public function edit(Meta $meta)
+    {
+        $indicadores = Indicador::where('estado', 'activo')->get();
+        $usuarios = User::all();  // Agregado para enviar usuarios a la vista
+        return view('metas.edit', compact('meta', 'indicadores', 'usuarios'));
+    }
+
     public function update(Request $request, Meta $meta)
     {
-        $request->validate([
-            'codigo' => 'required|string|max:20|unique:metas,codigo,' . $meta->id,
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
+        $validated = $request->validate([
+            'id_indicador' => 'required|exists:indicadores,id',
+            'anio' => 'required|integer|min:2000|max:2100',
+            'valor_objetivo' => 'required|numeric|min:0',
             'estado' => 'required|in:activo,inactivo',
-            'objetivo_id' => 'required|exists:objetivos_institucionales,id',
-            'plan_id' => 'nullable|exists:planes,id',
-            'fecha_inicio' => 'nullable|date',
-            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'usuario_responsable_id' => 'required|exists:users,id', // validar responsable
         ]);
 
-        $meta->update($request->all());
+        $meta->update($validated);
 
         return redirect()->route('metas.index')->with('success', 'Meta actualizada correctamente.');
     }
 
-    // Eliminar una meta
     public function destroy(Meta $meta)
     {
         $meta->delete();
         return redirect()->route('metas.index')->with('success', 'Meta eliminada correctamente.');
-    }
-
-    // Opcional: mostrar detalles de una meta
-    public function show(Meta $meta)
-    {
-        $meta->load(['objetivo', 'plan']);
-        return view('metas.show', compact('meta'));
     }
 }

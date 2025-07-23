@@ -9,8 +9,6 @@ use App\Models\ObjetivoInstitucional;
 use App\Models\Proyecto;
 use App\Models\Institucion;
 use App\Models\Rol;
-
-// Importa el facade de DomPDF correctamente según versión Laravel y paquete instalado
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReporteController extends Controller
@@ -41,7 +39,6 @@ class ReporteController extends Controller
             abort(404, 'Tipo de reporte no válido');
         }
 
-        // Obtener datos filtrados
         $datos = $this->consultarDatos($tipo, $request->all());
 
         $instituciones = Institucion::all();
@@ -59,7 +56,6 @@ class ReporteController extends Controller
         $titulo = $titulos[$tipo] ?? ucfirst($tipo);
 
         if ($action === 'pdf') {
-            // Generar y descargar PDF directamente
             $pdf = Pdf::loadView('reportes.resultados_pdf', compact('datos', 'tipo', 'instituciones', 'roles', 'titulo'));
             return $pdf->download("reporte_{$tipo}_" . date('Ymd_His') . ".pdf");
         }
@@ -67,9 +63,6 @@ class ReporteController extends Controller
         return view('reportes.resultados', compact('datos', 'tipo', 'instituciones', 'roles', 'titulo'));
     }
 
-    /**
-     * Construye consulta y devuelve datos según tipo y filtros.
-     */
     private function consultarDatos(string $tipo, array $filtros)
     {
         switch ($tipo) {

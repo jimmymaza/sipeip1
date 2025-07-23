@@ -9,13 +9,22 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\InstitucionController;
+use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\ObjetivoInstitucionalController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\AlineacionObjetivoController;
+use App\Http\Controllers\IndicadorController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\VinculacionController;
+use App\Http\Controllers\CronogramaController;
+use App\Http\Controllers\PresupuestoController;
+
+// Controladores para recuperación de contraseña
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,16 +44,16 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
     Route::prefix('password')->name('password.')->group(function () {
-        Route::get('/forgot', [App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])->name('request');
-        Route::post('/forgot', [App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->name('email');
-        Route::get('/reset/{token}', [App\Http\Controllers\Auth\NewPasswordController::class, 'create'])->name('reset');
-        Route::post('/reset', [App\Http\Controllers\Auth\NewPasswordController::class, 'store'])->name('update');
+        Route::get('/forgot', [PasswordResetLinkController::class, 'create'])->name('request');
+        Route::post('/forgot', [PasswordResetLinkController::class, 'store'])->name('email');
+        Route::get('/reset/{token}', [NewPasswordController::class, 'create'])->name('reset');
+        Route::post('/reset', [NewPasswordController::class, 'store'])->name('update');
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| Rutas Protegidas (requieren autenticación)
+| Rutas Protegidas (requieren autenticación y acceso a módulos)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -60,14 +69,21 @@ Route::middleware('auth')->group(function () {
     Route::redirect('/objetivos/create', '/objetivos/institucional/create')->name('objetivos.create.default');
 
     // Usuarios y Roles
-    Route::resource('roles', RolController::class);
-    Route::resource('usuarios', UsuarioController::class);
+    Route::middleware('checkmodulo:Roles')->group(function () {
+        Route::resource('roles', RolController::class);
+    });
+
+    Route::middleware('checkmodulo:Usuarios')->group(function () {
+        Route::resource('usuarios', UsuarioController::class);
+    });
 
     // Instituciones
-    Route::resource('instituciones', InstitucionController::class);
+    Route::middleware('checkmodulo:Instituciones')->group(function () {
+        Route::resource('instituciones', InstitucionController::class);
+    });
 
     // Objetivos por tipo con prefijo y nombre
-    Route::prefix('objetivos/{tipo}')->name('objetivos.')->group(function () {
+    Route::middleware('checkmodulo:Objetivos')->prefix('objetivos/{tipo}')->name('objetivos.')->group(function () {
         Route::get('/', [ObjetivoInstitucionalController::class, 'index'])->name('index');
         Route::get('/create', [ObjetivoInstitucionalController::class, 'create'])->name('create');
         Route::post('/', [ObjetivoInstitucionalController::class, 'store'])->name('store');
@@ -87,33 +103,72 @@ Route::middleware('auth')->group(function () {
         });
     });
 
+    // Indicadores
+    Route::middleware('checkmodulo:Indicadores')->group(function () {
+        Route::resource('indicadores', IndicadorController::class);
+    });
+
+    // Vinculaciones
+    Route::middleware('checkmodulo:Vinculaciones')->group(function () {
+        Route::resource('vinculaciones', VinculacionController::class)->parameters([
+            'vinculaciones' => 'vinculacion',
+        ]);
+    });
+
     // Metas
-    Route::resource('metas', MetaController::class);
+    Route::middleware('checkmodulo:Metas')->group(function () {
+        Route::resource('metas', MetaController::class);
+    });
 
     // Planes
-    Route::resource('planes', PlanController::class)->parameters([
-        'planes' => 'plan',
-    ]);
+    Route::middleware('checkmodulo:Planes')->group(function () {
+        Route::resource('planes', PlanController::class)->parameters([
+            'planes' => 'plan',
+        ]);
+    });
+
+    // Cronogramas
+    Route::middleware('checkmodulo:Cronogramas')->group(function () {
+        Route::resource('cronogramas', CronogramaController::class);
+    });
+
+    // Presupuestos
+    Route::middleware('checkmodulo:Presupuestos')->group(function () {
+        Route::resource('presupuestos', PresupuestoController::class);
+    });
 
     // Programas
-    Route::resource('programas', ProgramaController::class);
+    Route::middleware('checkmodulo:Programas')->group(function () {
+        Route::resource('programas', ProgramaController::class);
+    });
 
     // Proyectos
-    Route::resource('proyectos', ProyectoController::class);
+    Route::middleware('checkmodulo:Proyectos')->group(function () {
+        Route::resource('proyectos', ProyectoController::class);
+    });
 
     /*
     |--------------------------------------------------------------------------
     | Reportes
     |--------------------------------------------------------------------------
     */
-    Route::prefix('reportes')->name('reportes.')->group(function () {
+    Route::middleware('checkmodulo:Reportes')->prefix('reportes')->name('reportes.')->group(function () {
         Route::get('/', [ReporteController::class, 'index'])->name('index');
-
-        // Ruta para generar reportes y también exportar PDF, según parámetro 'action'
         Route::match(['get', 'post'], '/generar', [ReporteController::class, 'generar'])->name('generar');
-
-        // Si no tienes un método separado para exportar PDF, no incluyas esta ruta
-        // Route::post('/exportar/pdf', [ReporteController::class, 'exportarPDF'])->name('exportar.pdf');
     });
 
+    // Ruta para probar módulos del usuario autenticado
+    Route::get('/probar-modulos', function () {
+        $usuario = Auth::user();
+
+        if (!$usuario) {
+            return 'Usuario no autenticado';
+        }
+
+        return response()->json([
+            'Usuario' => $usuario->Nombre . ' ' . $usuario->Apellido,
+            'Correo' => $usuario->Correo,
+            'ModulosCompletos' => $usuario->modulosCompletos(),
+        ]);
+    });
 });

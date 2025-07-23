@@ -177,7 +177,8 @@
     </div>
   @endif
 
-  <form method="POST" action="{{ route('login') }}">
+  <!-- CORREGIDO: Usar route('login.post') para enviar el formulario -->
+  <form method="POST" action="{{ route('login.post') }}">
     @csrf
 
     <label for="cedula">Cédula o Correo</label>
