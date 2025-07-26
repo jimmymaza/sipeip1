@@ -12,13 +12,19 @@ class AddObjetivoIdAndPlanIdToMetasTable extends Migration
             // Solo agregar columna objetivo_id si no existe
             if (!Schema::hasColumn('metas', 'objetivo_id')) {
                 $table->unsignedBigInteger('objetivo_id')->nullable()->after('id');
-                $table->foreign('objetivo_id')->references('id')->on('objetivos')->onDelete('cascade');
+                $table->foreign('objetivo_id')
+                      ->references('id')
+                      ->on('objetivos_institucionales')  // <- Aquí está la corrección
+                      ->onDelete('cascade');
             }
 
             // Solo agregar columna plan_id si no existe
             if (!Schema::hasColumn('metas', 'plan_id')) {
                 $table->unsignedBigInteger('plan_id')->nullable()->after('objetivo_id');
-                $table->foreign('plan_id')->references('id')->on('planes')->onDelete('cascade');
+                $table->foreign('plan_id')
+                      ->references('id')
+                      ->on('planes')
+                      ->onDelete('cascade');
             }
         });
     }

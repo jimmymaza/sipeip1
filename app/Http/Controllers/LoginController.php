@@ -31,14 +31,14 @@ class LoginController extends Controller
         if (!$user) {
             return back()->withErrors([
                 'cedula' => 'Usuario no encontrado.',
-            ])->onlyInput('cedula');
+            ])->withInput();
         }
 
         // Verificar la contraseña
         if (!Hash::check($credentials['password'], $user->Clave)) {
             return back()->withErrors([
                 'password' => 'Contraseña incorrecta.',
-            ])->onlyInput('cedula');
+            ])->withInput();
         }
 
         // Iniciar sesión si todo es correcto

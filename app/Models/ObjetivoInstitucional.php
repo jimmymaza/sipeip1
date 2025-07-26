@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory; // <-- Agregado
 use Illuminate\Database\Eloquent\Model;
 
 class ObjetivoInstitucional extends Model
 {
+    use HasFactory; // <-- Agregado
+
     protected $table = 'objetivos_institucionales';
 
     protected $fillable = [

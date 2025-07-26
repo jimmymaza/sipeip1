@@ -26,12 +26,6 @@ use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 
-/*
-|--------------------------------------------------------------------------
-| Rutas Públicas (sin autenticación)
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/', function () {
     return Auth::check()
         ? redirect()->route('dashboard')
@@ -51,12 +45,7 @@ Route::middleware('guest')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Rutas Protegidas (requieren autenticación y acceso a módulos)
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -69,95 +58,93 @@ Route::middleware('auth')->group(function () {
     Route::redirect('/objetivos/create', '/objetivos/institucional/create')->name('objetivos.create.default');
 
     // Usuarios y Roles
-    Route::middleware('checkmodulo:Roles')->group(function () {
-        Route::resource('roles', RolController::class);
-    });
-
-    Route::middleware('checkmodulo:Usuarios')->group(function () {
-        Route::resource('usuarios', UsuarioController::class);
-    });
+    Route::resource('roles', RolController::class);
+    Route::resource('usuarios', UsuarioController::class);
 
     // Instituciones
-    Route::middleware('checkmodulo:Instituciones')->group(function () {
-        Route::resource('instituciones', InstitucionController::class);
+    Route::resource('instituciones', InstitucionController::class);
+
+    Route::bind('objetivo', function ($value, $route) {
+        $tipoUrl = strtolower(trim($route->parameter('tipo') ?? ''));
+
+        $tipoMapeado = [
+            'institucional'   => 'institucional',
+            'plan_nacional'   => 'nacional',
+            'ods'             => 'ods',
+        ];
+
+        if (!array_key_exists($tipoUrl, $tipoMapeado)) {
+            abort(404, 'Tipo inválido.');
+        }
+
+        $tipoBD = $tipoMapeado[$tipoUrl];
+
+        return \App\Models\ObjetivoInstitucional::where('id', $value)
+            ->where('tipo', $tipoBD)
+            ->firstOrFail();
     });
 
     // Objetivos por tipo con prefijo y nombre
-    Route::middleware('checkmodulo:Objetivos')->prefix('objetivos/{tipo}')->name('objetivos.')->group(function () {
-        Route::get('/', [ObjetivoInstitucionalController::class, 'index'])->name('index');
-        Route::get('/create', [ObjetivoInstitucionalController::class, 'create'])->name('create');
-        Route::post('/', [ObjetivoInstitucionalController::class, 'store'])->name('store');
-        Route::get('/{objetivo}/edit', [ObjetivoInstitucionalController::class, 'edit'])->name('edit');
-        Route::put('/{objetivo}', [ObjetivoInstitucionalController::class, 'update'])->name('update');
-        Route::delete('/{objetivo}', [ObjetivoInstitucionalController::class, 'destroy'])->name('destroy');
-        Route::get('/{objetivo}', [ObjetivoInstitucionalController::class, 'show'])->name('show');
+    Route::prefix('objetivos/{tipo}')
+        ->where(['tipo' => 'institucional|plan_nacional|ods'])  // <-- CORREGIDO: donde 'where' recibe array asociativo
+        ->name('objetivos.')
+        ->group(function () {
+            Route::get('/', [ObjetivoInstitucionalController::class, 'index'])->name('index');
+            Route::get('/create', [ObjetivoInstitucionalController::class, 'create'])->name('create');
+            Route::post('/', [ObjetivoInstitucionalController::class, 'store'])->name('store');
+            Route::get('/{objetivo}/edit', [ObjetivoInstitucionalController::class, 'edit'])->name('edit');
+            Route::put('/{objetivo}', [ObjetivoInstitucionalController::class, 'update'])->name('update');
+            Route::delete('/{objetivo}', [ObjetivoInstitucionalController::class, 'destroy'])->name('destroy');
+            Route::get('/{objetivo}', [ObjetivoInstitucionalController::class, 'show'])->name('show');
 
-        // Alineaciones anidadas por objetivo
-        Route::prefix('{objetivo}/alineaciones')->name('alineaciones.')->group(function () {
-            Route::get('/', [AlineacionObjetivoController::class, 'index'])->name('index');
-            Route::get('/create', [AlineacionObjetivoController::class, 'create'])->name('create');
-            Route::post('/', [AlineacionObjetivoController::class, 'store'])->name('store');
-            Route::get('/{alineacion}/edit', [AlineacionObjetivoController::class, 'edit'])->name('edit');
-            Route::put('/{alineacion}', [AlineacionObjetivoController::class, 'update'])->name('update');
-            Route::delete('/{alineacion}', [AlineacionObjetivoController::class, 'destroy'])->name('destroy');
+            // Alineaciones anidadas por objetivo
+            Route::prefix('{objetivo}/alineaciones')->name('alineaciones.')->group(function () {
+                Route::get('/', [AlineacionObjetivoController::class, 'index'])->name('index');
+                Route::get('/create', [AlineacionObjetivoController::class, 'create'])->name('create');
+                Route::post('/', [AlineacionObjetivoController::class, 'store'])->name('store');
+                Route::get('/{alineacion}/edit', [AlineacionObjetivoController::class, 'edit'])->name('edit');
+                Route::put('/{alineacion}', [AlineacionObjetivoController::class, 'update'])->name('update');
+                Route::delete('/{alineacion}', [AlineacionObjetivoController::class, 'destroy'])->name('destroy');
+            });
         });
-    });
 
     // Indicadores
-    Route::middleware('checkmodulo:Indicadores')->group(function () {
-        Route::resource('indicadores', IndicadorController::class);
-    });
+    Route::resource('indicadores', IndicadorController::class)->parameters([
+        'indicadores' => 'indicador',
+    ]);
 
     // Vinculaciones
-    Route::middleware('checkmodulo:Vinculaciones')->group(function () {
-        Route::resource('vinculaciones', VinculacionController::class)->parameters([
-            'vinculaciones' => 'vinculacion',
-        ]);
-    });
+    Route::resource('vinculaciones', VinculacionController::class)->parameters([
+        'vinculaciones' => 'vinculacion',
+    ]);
 
     // Metas
-    Route::middleware('checkmodulo:Metas')->group(function () {
-        Route::resource('metas', MetaController::class);
-    });
+    Route::resource('metas', MetaController::class);
 
     // Planes
-    Route::middleware('checkmodulo:Planes')->group(function () {
-        Route::resource('planes', PlanController::class)->parameters([
-            'planes' => 'plan',
-        ]);
-    });
+    Route::resource('planes', PlanController::class)->parameters([
+        'planes' => 'plan',
+    ]);
 
     // Cronogramas
-    Route::middleware('checkmodulo:Cronogramas')->group(function () {
-        Route::resource('cronogramas', CronogramaController::class);
-    });
+    Route::resource('cronogramas', CronogramaController::class);
 
     // Presupuestos
-    Route::middleware('checkmodulo:Presupuestos')->group(function () {
-        Route::resource('presupuestos', PresupuestoController::class);
-    });
+    Route::resource('presupuestos', PresupuestoController::class);
 
     // Programas
-    Route::middleware('checkmodulo:Programas')->group(function () {
-        Route::resource('programas', ProgramaController::class);
-    });
+    Route::resource('programas', ProgramaController::class);
 
     // Proyectos
-    Route::middleware('checkmodulo:Proyectos')->group(function () {
-        Route::resource('proyectos', ProyectoController::class);
-    });
+    Route::resource('proyectos', ProyectoController::class);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reportes
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('checkmodulo:Reportes')->prefix('reportes')->name('reportes.')->group(function () {
+   
+    Route::prefix('reportes')->name('reportes.')->group(function () {
         Route::get('/', [ReporteController::class, 'index'])->name('index');
         Route::match(['get', 'post'], '/generar', [ReporteController::class, 'generar'])->name('generar');
     });
 
-    // Ruta para probar módulos del usuario autenticado
+
     Route::get('/probar-modulos', function () {
         $usuario = Auth::user();
 

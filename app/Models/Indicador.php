@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Indicador extends Model
 {
-    use HasFactory;
-
     protected $table = 'indicadores';
 
+    // La tabla no tiene timestamps (created_at, updated_at)
+    public $timestamps = false;
+
+    // Campos asignables masivamente
     protected $fillable = [
-        'id_alineacion', // ID que referencia la vinculación o alineación
+        'id_alineacion',
         'codigo',
         'nombre',
         'descripcion',
@@ -21,16 +22,20 @@ class Indicador extends Model
         'fecha_registro',
     ];
 
-    // Un Indicador puede tener muchas Metas
-    public function metas()
-    {
-        return $this->hasMany(Meta::class, 'id_indicador');
-    }
+    // Cast para manejar fecha_registro como instancia Carbon
+    protected $casts = [
+        'fecha_registro' => 'datetime',
+    ];
 
-    // Un Indicador pertenece a una Vinculación o Alineación
-    // Si 'id_alineacion' referencia a una tabla vinculaciones, usar Vinculacion::class
+    // Relación: un indicador pertenece a una vinculacion
     public function vinculacion()
     {
         return $this->belongsTo(Vinculacion::class, 'id_alineacion');
+    }
+
+    // Relación: un indicador tiene muchas metas
+    public function metas()
+    {
+        return $this->hasMany(Meta::class, 'id_indicador');
     }
 }

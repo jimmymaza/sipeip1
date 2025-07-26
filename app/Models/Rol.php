@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;  // Agregado
 
 class Rol extends Model
 {
-    protected $table = 'rol';            // Nombre de la tabla en BD
-    protected $primaryKey = 'IdRol';     // Llave primaria personalizada
-    public $timestamps = false;          // No usa timestamps
+    use HasFactory;  // Agregado
+
+    protected $table = 'rol';              // Nombre de la tabla en BD
+    protected $primaryKey = 'IdRol';       // Llave primaria personalizada
+    public $timestamps = false;            // No usa timestamps
 
     protected $fillable = [
         'Nombre',
@@ -27,6 +30,8 @@ class Rol extends Model
             'rol_modulo',           // Tabla pivote
             'IdRol',                // Foreign key de este modelo en la tabla pivote
             'IdModulo'              // Foreign key del modelo relacionado en la tabla pivote
-        )->withPivot('AccesoCompleto');    // Campo extra en la tabla pivote
+        )
+        ->withPivot('AccesoCompleto')
+        ->withTimestamps(); // Solo si la tabla pivote tiene created_at y updated_at
     }
 }

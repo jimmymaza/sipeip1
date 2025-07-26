@@ -13,6 +13,10 @@
     </div>
 @endif
 
+@php
+    $fechaRegistro = old('fecha_registro') ? \Carbon\Carbon::parse(old('fecha_registro'))->format('Y-m-d\TH:i') : '';
+@endphp
+
 <form action="{{ route('objetivos.store', ['tipo' => $tipo]) }}" method="POST" style="background-color: #f9fafb; padding: 2rem; border-radius: 10px; max-width: 600px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
     @csrf
 
@@ -65,7 +69,7 @@
         >{{ old('descripcion') }}</textarea>
     </div>
 
-    {{-- Tipo (campo oculto, porque viene por URL/controlador) --}}
+    {{-- Tipo (campo oculto) --}}
     <input type="hidden" name="tipo" value="{{ $tipo }}">
 
     {{-- Estado --}}
@@ -78,6 +82,7 @@
             aria-required="true"
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem; background-color: white;"
         >
+            <option value="" disabled {{ old('estado') === null ? 'selected' : '' }}>-- Seleccione estado --</option>
             <option value="activo" {{ old('estado') === 'activo' ? 'selected' : '' }}>Activo</option>
             <option value="inactivo" {{ old('estado') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
         </select>
@@ -90,9 +95,8 @@
             type="datetime-local"
             name="fecha_registro"
             id="fecha_registro"
-            value="{{ old('fecha_registro') }}"
-            required
-            aria-required="true"
+            value="{{ $fechaRegistro }}"
+            aria-required="false"
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
     </div>
@@ -107,5 +111,7 @@
     >
         💾 Guardar Objetivo
     </button>
+
+    <a href="{{ route('objetivos.index', ['tipo' => $tipo]) }}" style="margin-left: 1rem; color: #6b7280; font-weight: 600;">Cancelar</a>
 </form>
 @endsection

@@ -25,8 +25,12 @@
             value="{{ old('Cedula') }}"
             required
             autofocus
+            maxlength="10"
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Cedula'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Cedula') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -39,6 +43,9 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Nombre'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Nombre') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -51,6 +58,9 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Apellido'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Apellido') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -63,6 +73,9 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Correo'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Correo') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -74,6 +87,9 @@
             value="{{ old('Telefono') }}"
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Telefono'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Telefono') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -90,6 +106,9 @@
                 </option>
             @endforeach
         </select>
+        @if ($errors->has('IdInstitucion'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('IdInstitucion') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -107,6 +126,9 @@
                 </option>
             @endforeach
         </select>
+        @if ($errors->has('IdRol'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('IdRol') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 1rem;">
@@ -118,6 +140,9 @@
             required
             style="width: 100%; padding: 0.6rem 0.8rem; border: 1.8px solid #d1d5db; border-radius: 8px; font-size: 1rem;"
         >
+        @if ($errors->has('Clave'))
+            <p style="color: red; margin-top: 0.3rem;">{{ $errors->first('Clave') }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 2rem;">

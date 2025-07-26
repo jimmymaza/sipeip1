@@ -14,25 +14,30 @@ class CreateVinculacionesTable extends Migration
             $table->string('nombre');
             $table->text('descripcion')->nullable();
 
-            // Nuevas columnas FK para las relaciones
+            // Columnas para relaciones (sin claves foráneas aún para evitar errores)
             $table->unsignedBigInteger('objetivo_institucional_id')->nullable();
             $table->unsignedBigInteger('indicador_id')->nullable();
             $table->unsignedBigInteger('meta_id')->nullable();
             $table->unsignedBigInteger('usuario_id')->nullable();
 
             $table->timestamps();
+        });
 
-            // Llaves foráneas
-            $table->foreign('objetivo_institucional_id')->references('id')->on('objetivos_institucionales')->onDelete('set null');
-            $table->foreign('indicador_id')->references('id')->on('indicadores')->onDelete('set null');
-            $table->foreign('meta_id')->references('id')->on('metas')->onDelete('set null');
-            $table->foreign('usuario_id')->references('id')->on('usuarios')->onDelete('set null');
+       
+        Schema::table('vinculaciones', function (Blueprint $table) {
+            $table->foreign('objetivo_institucional_id')
+                  ->references('id')->on('objetivos_institucionales')
+                  ->onDelete('set null');
         });
     }
 
     public function down()
     {
+        Schema::table('vinculaciones', function (Blueprint $table) {
+            // Eliminar clave foránea antes de eliminar tabla
+            $table->dropForeign(['objetivo_institucional_id']);
+        });
+
         Schema::dropIfExists('vinculaciones');
     }
 }
-

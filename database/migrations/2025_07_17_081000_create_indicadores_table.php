@@ -10,13 +10,14 @@ class CreateIndicadoresTable extends Migration
     {
         Schema::create('indicadores', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_alineacion'); // que en realidad es vinculacion
+            $table->unsignedBigInteger('id_alineacion'); // relación con vinculaciones
             $table->string('codigo', 50)->unique();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->string('unidad_medida', 100)->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamp('fecha_registro')->useCurrent();
+            $table->timestamps();
 
             $table->foreign('id_alineacion')->references('id')->on('vinculaciones')->onDelete('cascade');
         });
@@ -24,6 +25,10 @@ class CreateIndicadoresTable extends Migration
 
     public function down()
     {
+        Schema::table('indicadores', function (Blueprint $table) {
+            $table->dropForeign(['id_alineacion']);
+        });
+
         Schema::dropIfExists('indicadores');
     }
 }

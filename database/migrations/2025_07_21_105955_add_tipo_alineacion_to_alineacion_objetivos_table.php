@@ -9,14 +9,18 @@ class AddTipoAlineacionToAlineacionObjetivosTable extends Migration
     public function up()
     {
         Schema::table('alineacion_objetivos', function (Blueprint $table) {
-            $table->string('tipo_alineacion')->after('objetivo_alineado_id')->nullable()->comment('Tipo de alineación: ej. institucional-pnd');
+            if (!Schema::hasColumn('alineacion_objetivos', 'tipo_alineacion')) {
+                $table->string('tipo_alineacion')->after('objetivo_alineado_id')->nullable()->comment('Tipo de alineación: ej. institucional-pnd');
+            }
         });
     }
 
     public function down()
     {
         Schema::table('alineacion_objetivos', function (Blueprint $table) {
-            $table->dropColumn('tipo_alineacion');
+            if (Schema::hasColumn('alineacion_objetivos', 'tipo_alineacion')) {
+                $table->dropColumn('tipo_alineacion');
+            }
         });
     }
 }

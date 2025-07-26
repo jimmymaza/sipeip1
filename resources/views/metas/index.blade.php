@@ -16,22 +16,63 @@
     <i class="fas fa-plus" aria-hidden="true"></i> Crear Nueva Meta
   </a>
 
-  <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 1rem;">
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 0.9rem;">
     <thead>
       <tr style="background-color: #2563eb; color: white; font-weight: 700;">
-        <th style="padding: 12px 15px; text-align: left;">ID</th>
-        <th style="padding: 12px 15px; text-align: left;">Descripción</th>
-        <th style="padding: 12px 15px; text-align: left;">Responsable</th>
-        <th style="padding: 12px 15px; text-align: center;">Acciones</th>
+        <th style="padding: 12px 10px; text-align: left;">ID</th>
+        <th style="padding: 12px 10px; text-align: left;">Objetivo</th>
+        <th style="padding: 12px 10px; text-align: left;">Plan</th>
+        <th style="padding: 12px 10px; text-align: left;">Indicador</th>
+        <th style="padding: 12px 10px; text-align: left;">Año</th>
+        <th style="padding: 12px 10px; text-align: right;">Valor Objetivo</th>
+        <th style="padding: 12px 10px; text-align: left;">Estado</th>
+        <th style="padding: 12px 10px; text-align: left;">Responsable</th>
+        <th style="padding: 12px 10px; text-align: left;">Fecha Registro</th>
+        <th style="padding: 12px 10px; text-align: center;">Acciones</th>
       </tr>
     </thead>
     <tbody>
       @forelse ($metas as $meta)
       <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s;">
-        <td style="padding: 10px 15px;">{{ $meta->id }}</td>
-        <td style="padding: 10px 15px;">{{ $meta->descripcion }}</td>
-        <td style="padding: 10px 15px;">{{ $meta->usuarioResponsable->Nombre ?? 'N/A' }}</td>
-        <td style="padding: 10px 15px; text-align: center; white-space: nowrap;">
+        <td style="padding: 8px 10px;">{{ $meta->id }}</td>
+        
+        <td style="padding: 8px 10px;">
+          {{ $meta->objetivo->nombre ?? 'Sin objetivo' }}
+        </td>
+
+        <td style="padding: 8px 10px;">
+          {{ $meta->plan->nombre ?? 'Sin plan' }}
+        </td>
+
+        <td style="padding: 8px 10px;">
+          {{ $meta->indicador->descripcion ?? 'Sin indicador' }}
+        </td>
+
+        <td style="padding: 8px 10px;">
+          {{ $meta->anio }}
+        </td>
+
+        <td style="padding: 8px 10px; text-align: right;">
+          {{ number_format($meta->valor_objetivo, 2) }}
+        </td>
+
+        <td style="padding: 8px 10px;">
+          {{ ucfirst($meta->estado) }}
+        </td>
+
+        <td style="padding: 8px 10px;">
+          @if($meta->responsable)
+            {{ $meta->responsable->Nombre }} {{ $meta->responsable->Apellido }}
+          @else
+            Sin responsable
+          @endif
+        </td>
+
+        <td style="padding: 8px 10px;">
+          {{ \Carbon\Carbon::parse($meta->fecha_registro)->format('d/m/Y') }}
+        </td>
+
+        <td style="padding: 8px 10px; text-align: center; white-space: nowrap;">
           <a href="{{ route('metas.edit', $meta->id) }}" 
              style="text-decoration: none; color: #2563eb; margin-right: 12px; font-weight: 600;">
             <i class="fas fa-edit" aria-hidden="true"></i> Editar
@@ -40,7 +81,7 @@
           <button type="button" 
                   class="btn-delete" 
                   data-id="{{ $meta->id }}" 
-                  data-nombre="{{ $meta->descripcion ?? 'Meta' }}"
+                  data-nombre="{{ $meta->indicador->descripcion ?? 'Meta' }}"
                   style="background: none; border: none; color: #b91c1c; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
             <i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar
           </button>
@@ -48,7 +89,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="4" style="padding: 20px; text-align: center; color: #6b7280;">No hay metas registradas.</td>
+        <td colspan="10" style="padding: 20px; text-align: center; color: #6b7280;">No hay metas registradas.</td>
       </tr>
       @endforelse
     </tbody>
@@ -61,19 +102,20 @@
       <p id="modal-desc" style="font-size: 1rem;">
         ¿Estás seguro que deseas eliminar la meta: <strong id="modal-meta-nombre"></strong>?
       </p>
-      <form id="form-delete" method="POST" action="" style="margin-top: 20px;">
+      <form id="form-delete" method="POST" action="">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn-confirm" style="background-color: #b91c1c; color: white; padding: 12px 22px; border: none; border-radius: 5px; cursor: pointer; margin-right: 12px; font-weight: 700; font-size: 1rem; transition: background-color 0.3s ease;">
+        <button type="submit" class="btn-confirm" style="background-color: #b91c1c; color: white; padding: 12px 22px; border: none; border-radius: 5px; cursor: pointer; margin-right: 12px; font-weight: 700;">
           Sí, eliminar
         </button>
-        <button type="button" class="btn-cancel" style="background-color: #6b7280; color: #f9fafb; padding: 12px 22px; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; font-size: 1rem; transition: background-color 0.3s ease;">
+        <button type="button" class="btn-cancel" style="background-color: #6b7280; color: #f9fafb; padding: 12px 22px; border: none; border-radius: 5px; cursor: pointer; font-weight: 700;">
           Cancelar
         </button>
       </form>
     </div>
   </div>
 
+  {{-- Estilos del modal y tabla --}}
   <style>
     table tbody tr:hover {
       background-color: #e0f2fe;
@@ -120,34 +162,35 @@
     }
   </style>
 
+  {{-- Script del modal --}}
   <script>
-    const modal = document.getElementById('modal-delete');
-    const formDelete = document.getElementById('form-delete');
-    const modalNombre = document.getElementById('modal-meta-nombre');
-    const btnCancel = modal.querySelector('.btn-cancel');
-    const btnConfirm = formDelete.querySelector('.btn-confirm');
+    document.addEventListener('DOMContentLoaded', function () {
+      const modal = document.getElementById('modal-delete');
+      const formDelete = document.getElementById('form-delete');
+      const modalNombre = document.getElementById('modal-meta-nombre');
+      const btnCancel = modal.querySelector('.btn-cancel');
+      const btnConfirm = formDelete.querySelector('.btn-confirm');
 
-    document.querySelectorAll('.btn-delete').forEach(button => {
-      button.addEventListener('click', () => {
-        const id = button.getAttribute('data-id');
-        const nombre = button.getAttribute('data-nombre');
-
-        modalNombre.textContent = nombre;
-        formDelete.action = "{{ url('metas') }}/" + id;
-        
-        modal.style.display = 'flex';
-        btnConfirm.focus();
+      document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.getAttribute('data-id');
+          const nombre = button.getAttribute('data-nombre');
+          modalNombre.textContent = nombre;
+          formDelete.action = "{{ url('metas') }}/" + id;
+          modal.style.display = 'flex';
+          btnConfirm.focus();
+        });
       });
-    });
 
-    btnCancel.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') {
+      btnCancel.addEventListener('click', () => {
         modal.style.display = 'none';
-      }
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+          modal.style.display = 'none';
+        }
+      });
     });
   </script>
 </div>

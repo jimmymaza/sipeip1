@@ -12,23 +12,38 @@ class VinculacionController extends Controller
 {
     public function index()
     {
+        // Carga relaciones para evitar consultas N+1
         $vinculaciones = Vinculacion::with(['objetivoInstitucional', 'indicador', 'meta'])->get();
         return view('vinculaciones.index', compact('vinculaciones'));
     }
 
     public function create()
     {
-        $objetivos = ObjetivoInstitucional::all();
-        $indicadores = Indicador::all();
-        $metas = Meta::all();
+        $objetivos = ObjetivoInstitucional::where('estado', 'activo')->get();
+
+        $indicadores = collect();
+        $metas = collect();
+
+        if ($objetivos->isNotEmpty()) {
+            $indicadores = Indicador::where('estado', 'activo')
+                ->whereIn('objetivo_institucional_id', $objetivos->pluck('id'))
+                ->get();
+
+            if ($indicadores->isNotEmpty()) {
+                $metas = Meta::where('estado', 'activo')
+                    ->whereIn('id_indicador', $indicadores->pluck('id'))
+                    ->get();
+            }
+        }
+
         return view('vinculaciones.create', compact('objetivos', 'indicadores', 'metas'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tipo' => 'nullable|string|max:255',
-            'nombre' => 'nullable|string|max:255',
+            'tipo' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'objetivo_institucional_id' => 'nullable|exists:objetivos_institucionales,id',
             'indicador_id' => 'nullable|exists:indicadores,id',
@@ -42,17 +57,31 @@ class VinculacionController extends Controller
 
     public function edit(Vinculacion $vinculacion)
     {
-        $objetivos = ObjetivoInstitucional::all();
-        $indicadores = Indicador::all();
-        $metas = Meta::all();
+        $objetivos = ObjetivoInstitucional::where('estado', 'activo')->get();
+
+        $indicadores = collect();
+        $metas = collect();
+
+        if ($objetivos->isNotEmpty()) {
+            $indicadores = Indicador::where('estado', 'activo')
+                ->whereIn('objetivo_institucional_id', $objetivos->pluck('id'))
+                ->get();
+
+            if ($indicadores->isNotEmpty()) {
+                $metas = Meta::where('estado', 'activo')
+                    ->whereIn('id_indicador', $indicadores->pluck('id'))
+                    ->get();
+            }
+        }
+
         return view('vinculaciones.edit', compact('vinculacion', 'objetivos', 'indicadores', 'metas'));
     }
 
     public function update(Request $request, Vinculacion $vinculacion)
     {
         $validated = $request->validate([
-            'tipo' => 'nullable|string|max:255',
-            'nombre' => 'nullable|string|max:255',
+            'tipo' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'objetivo_institucional_id' => 'nullable|exists:objetivos_institucionales,id',
             'indicador_id' => 'nullable|exists:indicadores,id',

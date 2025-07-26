@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ObjetivoInstitucional;
+use App\Models\Indicador;
+use App\Models\Meta;
+use App\Models\User;
 
 class Vinculacion extends Model
 {

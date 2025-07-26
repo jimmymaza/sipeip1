@@ -41,6 +41,7 @@
             {{ $objetivo->fecha_registro ? \Carbon\Carbon::parse($objetivo->fecha_registro)->format('Y-m-d') : '—' }}
           </td>
           <td style="padding: 10px 15px; text-align: center; white-space: nowrap;">
+
             <a href="{{ route('objetivos.edit', ['tipo' => $tipo, 'objetivo' => $objetivo->id]) }}" 
                style="text-decoration: none; color: #2563eb; margin-right: 12px; font-weight: 600;"
                aria-label="Editar objetivo {{ $objetivo->nombre }}">
@@ -49,12 +50,13 @@
 
             <button type="button" 
                     class="btn-delete" 
-                    data-objetivoid="{{ $objetivo->id }}" 
+                    data-delete-url="{{ route('objetivos.destroy', ['tipo' => $tipo, 'objetivo' => $objetivo->id]) }}"
                     data-objetivonombre="{{ $objetivo->nombre }}"
                     style="background: none; border: none; color: #b91c1c; cursor: pointer; font-weight: 600; font-size: 0.9rem;"
                     aria-label="Eliminar objetivo {{ $objetivo->nombre }}">
               <i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar
             </button>
+
           </td>
         </tr>
       @empty
@@ -94,7 +96,7 @@
 
   <!-- Modal Confirmación Eliminar -->
   <div id="modal-delete" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc" tabindex="-1">
-    <div class="modal-content">
+    <div class="modal-content" tabindex="0">
       <h2 id="modal-title" style="color: #b91c1c; margin-bottom: 15px;">Confirmar eliminación</h2>
       <p id="modal-desc">¿Estás seguro que deseas eliminar el objetivo: <strong id="modal-objetivo-nombre"></strong>?</p>
       <form id="form-delete" method="POST" action="" style="margin-top: 20px;">
@@ -172,7 +174,6 @@
       background-color: #4b5563;
       outline: none;
     }
-    /* Ocultar la columna ID visualmente */
     .oculto {
       display: none;
     }
@@ -186,14 +187,14 @@
 
     document.querySelectorAll('.btn-delete').forEach(button => {
       button.addEventListener('click', () => {
-        const objetivoId = button.getAttribute('data-objetivoid');
+        const deleteUrl = button.getAttribute('data-delete-url');
         const objetivoNombre = button.getAttribute('data-objetivonombre');
 
         modalObjetivoNombre.textContent = objetivoNombre;
-        formDelete.action = `/objetivos/{{ $tipo }}/${objetivoId}`;
+        formDelete.action = deleteUrl;
 
         modal.style.display = 'flex';
-        modal.focus();
+        modal.querySelector('.modal-content').focus();
       });
     });
 

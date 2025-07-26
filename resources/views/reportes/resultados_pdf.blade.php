@@ -9,87 +9,68 @@
             box-sizing: border-box;
         }
 
+        /* Formato básico para impresión A4 */
+        @page {
+            size: A4;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 14px;
-            color: #374151;
-            margin: 40px auto;
-            background-color: #f3f4f6;
-            max-width: 1100px;
-            padding: 0 20px;
-            line-height: 1.5;
+            font-size: 12pt;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            line-height: 1.4;
         }
 
         h2 {
             text-align: center;
-            font-size: 28px;
-            margin-bottom: 25px;
-            color: #2563eb; /* azul vibrante */
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 12px;
+            font-size: 20pt;
+            margin-bottom: 20px;
             font-weight: 700;
             text-transform: capitalize;
-            letter-spacing: 0.03em;
             user-select: none;
+            color: #000;
         }
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            background-color: #ffffff;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
-            border-radius: 10px;
-            overflow: hidden;
-            font-size: 13.5px;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-bottom: 1.5rem;
         }
 
         thead tr {
-            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            text-transform: uppercase;
-            font-weight: 600;
-            font-size: 12px;
-            letter-spacing: 0.05em;
+            background-color: #ccc;
         }
 
         thead th {
-            padding: 14px 20px;
-            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 10px;
+            border: 1px solid #999;
+            text-align: left;
             user-select: none;
-        }
-        thead th:last-child {
-            border-right: none;
-        }
-
-        tbody tr {
-            transition: background-color 0.3s ease;
-            cursor: default;
-        }
-        tbody tr:nth-child(even) {
-            background-color: #f9fafb;
-        }
-        tbody tr:hover {
-            background-color: #eff6ff;
         }
 
         tbody td {
-            padding: 14px 20px;
-            border-right: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
-            color: #4b5563;
+            padding: 8px 10px;
+            border: 1px solid #999;
+            vertical-align: top;
+            word-wrap: break-word;
         }
-        tbody td:last-child {
-            border-right: none;
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
 
         /* Mensaje sin datos */
         .no-data {
             text-align: center;
             font-style: italic;
-            color: #9ca3af;
+            color: #555;
             padding: 30px 0;
-            font-size: 15px;
+            font-size: 14pt;
             font-weight: 600;
             user-select: none;
         }
@@ -104,7 +85,7 @@
             ¡Sin resultados! No hay datos para mostrar con este filtro.
         </div>
     @else
-        <table>
+        <table id="reporteTabla">
             <thead>
                 <tr>
                     @switch($tipo)

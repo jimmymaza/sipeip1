@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Indicador;
-use App\Models\Vinculacion;  // Aquí usas Vinculacion porque en tu modelo el campo es id_alineacion que apunta a vinculaciones
+use App\Models\Vinculacion;
 use Illuminate\Http\Request;
 
 class IndicadorController extends Controller
 {
     public function index()
     {
-        // Carga la relación vinculacion (alineacion) y metas
+        // Cargar indicadores con vinculacion y metas, sin usuarioResponsable
         $indicadores = Indicador::with(['vinculacion', 'metas'])->paginate(10);
         return view('indicadores.index', compact('indicadores'));
     }
 
     public function create()
     {
-        // Obtiene todas las vinculaciones para el select
         $vinculaciones = Vinculacion::all();
+        // No se cargan usuarios ya que eliminamos ese campo
         return view('indicadores.create', compact('vinculaciones'));
     }
 
@@ -26,6 +26,7 @@ class IndicadorController extends Controller
     {
         $request->validate([
             'id_alineacion' => 'required|exists:vinculaciones,id',
+            //'id_usuario_responsable' => 'required|exists:usuarios,IdUsuario', // eliminado
             'codigo' => 'required|string|max:50|unique:indicadores,codigo',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -34,13 +35,23 @@ class IndicadorController extends Controller
             'fecha_registro' => 'required|date',
         ]);
 
-        Indicador::create($request->all());
+        Indicador::create($request->only([
+            'id_alineacion',
+            //'id_usuario_responsable', // eliminado
+            'codigo',
+            'nombre',
+            'descripcion',
+            'unidad_medida',
+            'estado',
+            'fecha_registro',
+        ]));
 
         return redirect()->route('indicadores.index')->with('success', 'Indicador creado correctamente.');
     }
 
     public function show(Indicador $indicador)
     {
+        // Cargar relaciones necesarias sin usuarioResponsable
         $indicador->load('vinculacion', 'metas');
         return view('indicadores.show', compact('indicador'));
     }
@@ -48,6 +59,7 @@ class IndicadorController extends Controller
     public function edit(Indicador $indicador)
     {
         $vinculaciones = Vinculacion::all();
+        // No se cargan usuarios para editar
         return view('indicadores.edit', compact('indicador', 'vinculaciones'));
     }
 
@@ -55,6 +67,7 @@ class IndicadorController extends Controller
     {
         $request->validate([
             'id_alineacion' => 'required|exists:vinculaciones,id',
+            //'id_usuario_responsable' => 'required|exists:usuarios,IdUsuario', // eliminado
             'codigo' => 'required|string|max:50|unique:indicadores,codigo,' . $indicador->id,
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -63,7 +76,16 @@ class IndicadorController extends Controller
             'fecha_registro' => 'required|date',
         ]);
 
-        $indicador->update($request->all());
+        $indicador->update($request->only([
+            'id_alineacion',
+            //'id_usuario_responsable', // eliminado
+            'codigo',
+            'nombre',
+            'descripcion',
+            'unidad_medida',
+            'estado',
+            'fecha_registro',
+        ]));
 
         return redirect()->route('indicadores.index')->with('success', 'Indicador actualizado correctamente.');
     }
